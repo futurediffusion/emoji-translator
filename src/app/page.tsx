@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EmojiGrid from "@/components/EmojiGrid";
-import { toEmojiMatrix } from "@/lib/toEmojiMatrix";
+import { extractEmojis } from "@/lib/toEmojiMatrix";
+import { generateSymmetricPatternSymmetric } from "@/lib/generateSymmetricPatternSymmetric";
 
 export default function Home() {
   const [text, setText] = useState("");
   const [grid, setGrid] = useState<string[][] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const sizeOptions = [3, 5, 7];
+  const [sizeIndex, setSizeIndex] = useState(1); // default 5x5
+  const size = sizeOptions[sizeIndex];
+  const [emojis, setEmojis] = useState<string[]>([]);
+
+  const toggleSize = () => {
+    setSizeIndex((prev) => (prev + 1) % sizeOptions.length);
+  };
+
+  useEffect(() => {
+    if (emojis.length) {
+      const matrix = generateSymmetricPatternSymmetric(emojis, size);
+      setGrid(matrix);
+    }
+  }, [size, emojis]);
 
   const handleGenerate = async () => {
     if (!text.trim()) return;
@@ -50,7 +66,9 @@ export default function Home() {
       if (!content) {
         throw new Error("Respuesta vacía del modelo");
       }
-      const matrix = toEmojiMatrix(content);
+      const base = extractEmojis(content);
+      setEmojis(base);
+      const matrix = generateSymmetricPatternSymmetric(base.length ? base : ['🧿'], size);
       setGrid(matrix);
     } catch (err) {
       console.error(err);
@@ -65,6 +83,12 @@ export default function Home() {
       {grid && (
         <div className="w-[320px] h-[320px] p-4 shadow-xl bg-gray-50 rounded-2xl flex flex-col justify-center items-center">
           <EmojiGrid grid={grid} className="gap-2 text-5xl leading-none" />
+          <button
+            onClick={toggleSize}
+            className="mt-4 px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+          >
+            Cambiar tamaño: {size}x{size}
+          </button>
         </div>
       )}
       {error && <p className="text-red-500">{error}</p>}
