@@ -1,3 +1,5 @@
+import { generateSymmetricPattern } from './generateSymmetricPattern';
+
 export function toEmojiMatrix(rawText: string, size = 5): string[][] {
   // Eliminar símbolos no deseados
   const clean = rawText.replace(/["\[\]{}',]/g, '').trim();
@@ -5,24 +7,8 @@ export function toEmojiMatrix(rawText: string, size = 5): string[][] {
   // Separar emojis por espacios
   const emojis = clean.split(/\s+/).filter((e) => e.length > 0);
 
-  const total = size * size;
-  const centerIndex = Math.floor(total / 2);
+  // Usar 🧿 como comodín si no se encontró ningún emoji
+  const base = emojis.length > 0 ? emojis : ['🧿'];
 
-  // Rellenar repitiendo en orden
-  const filled = [...emojis];
-  while (filled.length < total) {
-    const repeatIndex = (filled.length - 1) % (emojis.length || 1);
-    filled.push(emojis[repeatIndex] || '🧿');
-  }
-
-  // Forzar 🧿 en el centro
-  filled[centerIndex] = '🧿';
-
-  // Convertir a matriz cuadrada
-  const matrix = [] as string[][];
-  for (let i = 0; i < size; i++) {
-    matrix.push(filled.slice(i * size, (i + 1) * size));
-  }
-
-  return matrix;
+  return generateSymmetricPattern(base, size);
 }
