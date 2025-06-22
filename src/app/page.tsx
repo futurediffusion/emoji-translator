@@ -78,27 +78,40 @@ export default function Home() {
     }
   };
 
+  const gridSizeRem = size * 3 + (size - 1) * 0.5;
+
   return (
-    <main className="flex flex-col min-h-screen items-center justify-center p-6 space-y-4">
-      {grid && (
-        <div className="w-[320px] h-[320px] p-4 shadow-xl bg-gray-50 rounded-2xl flex flex-col justify-center items-center">
-          <EmojiGrid grid={grid} className="gap-2 text-5xl leading-none" />
-          <button
-            onClick={toggleSize}
-            className="mt-4 px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+    <main className="flex flex-col min-h-screen items-center p-6">
+      <div className="flex flex-col items-center justify-center flex-1 space-y-4 w-full">
+        {grid && (
+          <div
+            className="p-4 shadow-xl bg-gray-50 rounded-2xl flex items-center justify-center"
+            style={{ width: `${gridSizeRem}rem`, height: `${gridSizeRem}rem` }}
           >
-            Cambiar tamaño: {size}x{size}
-          </button>
-        </div>
-      )}
-      {error && <p className="text-red-500">{error}</p>}
-      <div className="w-full max-w-md mt-auto flex">
+            <EmojiGrid grid={grid} className="gap-2 text-5xl leading-none w-full h-full" />
+          </div>
+        )}
+        <button
+          onClick={toggleSize}
+          className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+        >
+          Cambiar tamaño: {size}x{size}
+        </button>
+        {error && <p className="text-red-500">{error}</p>}
+      </div>
+      <div className="w-full max-w-md mx-auto flex mt-4">
         <textarea
           className="flex-1 p-3 border rounded-l resize-none"
           rows={3}
           placeholder="Escribe algo..."
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleGenerate();
+            }
+          }}
         />
         <button
           onClick={handleGenerate}
