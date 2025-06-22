@@ -1,4 +1,4 @@
-import { generateSymmetricPattern } from './generateSymmetricPattern';
+import { generateSymmetricPatternSymmetric } from './generateSymmetricPatternSymmetric';
 
 export function toEmojiMatrix(rawText: string, size = 5): string[][] {
   // Eliminar símbolos no deseados
@@ -10,5 +10,5 @@ export function toEmojiMatrix(rawText: string, size = 5): string[][] {
   // Usar 🧿 como comodín si no se encontró ningún emoji
   const base = emojis.length > 0 ? emojis : ['🧿'];
 
-  return generateSymmetricPattern(base, size);
+  return generateSymmetricPatternSymmetric(base, size);
 }
