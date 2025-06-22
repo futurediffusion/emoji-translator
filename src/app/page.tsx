@@ -3,7 +3,6 @@
 import { useState } from "react";
 import EmojiGrid from "@/components/EmojiGrid";
 import ExplanationBox from "@/components/ExplanationBox";
-import { parseGeminiResponse } from "@/lib/parseGeminiResponse";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -19,29 +18,47 @@ export default function Home() {
     setError("");
     try {
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCnnwnkEtqt3JGKsqo82EHeVg2E4vDO7AI",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDnO8MO4qFgkOcSO2eHVZkfQ7cZ2KhrA5I",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             contents: [
               {
                 parts: [
                   {
-                    text: `A partir del siguiente texto emocional, genera:\n1. Un patrón cuadrado 5x5 de emojis simétrico.\n2. Una tabla con el significado de cada emoji usado (1 línea por emoji).\n3. Un diagnóstico breve con título: \"¿Cómo leer esto?\".\n\nTexto emocional: "${text}"`,
+                    text: `A partir del siguiente texto emocional, genera:\n1. Un patrón cuadrado 5x5 de emojis simétrico.\n2. Una tabla con el significado de cada emoji usado (1 línea por emoji).\n3. Un diagnóstico breve con título: \"¿Cómo leer esto?\".\n\nTexto emocional: ${text}`,
                   },
                 ],
               },
             ],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.8,
+              maxOutputTokens: 500,
+            },
           }),
         }
       );
       const data = await res.json();
+      console.log("📡 Gemini raw response:", data);
+      if (!res.ok) {
+        throw new Error(`Error ${res.status}`);
+      }
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      console.log("🔍 Contenido recibido:\n", content);
       if (!content) {
         throw new Error("Respuesta vacía del modelo");
       }
-      const parsed = parseGeminiResponse(content);
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (parseErr) {
+        console.error(parseErr);
+        throw new Error("Formato de respuesta no válido");
+      }
       setGrid(parsed.emojiGrid);
       setExplanations(parsed.emojiExplanation);
       setDiagnosis(parsed.diagnosis);
