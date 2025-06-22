@@ -36,6 +36,26 @@ export default function TranslatorPage() {
     }
   };
 
+  const allLines = lines.join("\n");
+
+  const copyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(allLines);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const downloadAll = () => {
+    const blob = new Blob([allLines], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "emojis.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center pt-8 pb-24 relative bg-white">
       <h1 className="text-2xl font-bold mb-4">Emoji Translator</h1>
@@ -70,12 +90,28 @@ export default function TranslatorPage() {
           </button>
         </div>
       </div>
-      <Link
-        href="/"
-        className="fixed bottom-4 right-4 text-2xl p-2 bg-white rounded-full shadow hover:shadow-lg"
-      >
-        🏠
-      </Link>
+      <div className="fixed bottom-4 right-4 flex space-x-2">
+        <button
+          onClick={copyAll}
+          className="text-2xl p-2 bg-white rounded-full shadow hover:shadow-lg"
+          title="Copiar"
+        >
+          🗒️
+        </button>
+        <button
+          onClick={downloadAll}
+          className="text-2xl p-2 bg-white rounded-full shadow hover:shadow-lg"
+          title="Descargar"
+        >
+          📝
+        </button>
+        <Link
+          href="/"
+          className="text-2xl p-2 bg-white rounded-full shadow hover:shadow-lg"
+        >
+          🏠
+        </Link>
+      </div>
     </div>
   );
 }
