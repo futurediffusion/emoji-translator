@@ -54,7 +54,7 @@ export default function Home() {
               maxOutputTokens: 100,
             },
           }),
-        }
+        },
       );
       const data = await res.json();
       console.log("📡 Gemini raw response:", data);
@@ -68,7 +68,10 @@ export default function Home() {
       }
       const base = extractEmojis(content);
       setEmojis(base);
-      const matrix = generateSymmetricPatternSymmetric(base.length ? base : ['🧿'], size);
+      const matrix = generateSymmetricPatternSymmetric(
+        base.length ? base : ["🧿"],
+        size,
+      );
       setGrid(matrix);
     } catch (err) {
       console.error(err);
@@ -78,7 +81,10 @@ export default function Home() {
     }
   };
 
+  // Base dimension for the emoji grid itself
   const gridSizeRem = size * 3 + (size - 1) * 0.5;
+  // Account for the card padding (p-4 -> 1rem on each side)
+  const cardSizeRem = gridSizeRem + 2;
 
   return (
     <main className="flex flex-col min-h-screen items-center p-6">
@@ -86,9 +92,12 @@ export default function Home() {
         {grid && (
           <div
             className="p-4 shadow-xl bg-gray-50 rounded-2xl flex items-center justify-center"
-            style={{ width: `${gridSizeRem}rem`, height: `${gridSizeRem}rem` }}
+            style={{ width: `${cardSizeRem}rem`, height: `${cardSizeRem}rem` }}
           >
-            <EmojiGrid grid={grid} className="gap-2 text-5xl leading-none w-full h-full" />
+            <EmojiGrid
+              grid={grid}
+              className="gap-2 text-5xl leading-none w-full h-full"
+            />
           </div>
         )}
         <button
