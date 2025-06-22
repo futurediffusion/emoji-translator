@@ -7,31 +7,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY ?? 'AIzaSyDnO8MO4qFgkOcSO2eHVZkfQ7cZ2KhrA5I';
     if (!apiKey) {
       // If no key, return simple mock to keep demo working
       return NextResponse.json({ result: '🤖❓' });
     }
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Traduce la siguiente frase a una línea de emojis apropiados. No agregues texto, solo emojis separados por espacios.',
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Traduce la siguiente frase a una línea de emojis apropiados. No agregues texto, solo emojis separados por espacios.\n\nFrase: ${prompt}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.5,
+            maxOutputTokens: 100,
           },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.5,
-      }),
-    });
+        }),
+      },
+    );
 
     if (!res.ok) {
       const message = await res.text();
@@ -39,7 +45,7 @@ export async function POST(req: Request) {
     }
 
     const data = await res.json();
-    const result = data.choices?.[0]?.message?.content?.trim() ?? '';
+    const result = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
     return NextResponse.json({ result });
   } catch (err) {
     console.error(err);
