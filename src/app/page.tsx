@@ -37,7 +37,16 @@ export default function Home() {
       );
       const data = await res.json();
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      const parsed = JSON.parse(content);
+      if (!content) {
+        throw new Error("Respuesta vac\u00EDa del modelo");
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (parseErr) {
+        console.error(parseErr);
+        throw new Error("Formato de respuesta no v\u00E1lido");
+      }
       setGrid(parsed.emojiGrid);
       setExplanations(parsed.emojiExplanation);
       setDiagnosis(parsed.diagnosis);
