@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import EmojiGrid from "@/components/EmojiGrid";
-import ExplanationBox from "@/components/ExplanationBox";
-import { parseGeminiResponse } from "@/lib/parseGeminiResponse";
+import { toEmojiMatrix } from "@/lib/toEmojiMatrix";
 
 export default function Home() {
   const [text, setText] = useState("");
   const [grid, setGrid] = useState<string[][] | null>(null);
-  const [explanations, setExplanations] = useState<Record<string, string> | null>(null);
-  const [diagnosis, setDiagnosis] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,15 +27,15 @@ export default function Home() {
               {
                 parts: [
                   {
-                    text: `A partir del siguiente texto emocional, genera:\n1. Un patrón cuadrado 5x5 de emojis simétrico.\n2. Una tabla con el significado de cada emoji usado (1 línea por emoji).\n3. Un diagnóstico breve con título: \"¿Cómo leer esto?\".\n\nTexto emocional: ${text}`,
+                    text: `Traduce el siguiente texto a la mayor cantidad posible de emojis apropiados. No expliques nada. Solo responde con emojis separados por espacios:\n\nTexto: ${text}`,
                   },
                 ],
               },
             ],
             generationConfig: {
               responseMimeType: "application/json",
-              temperature: 0.8,
-              maxOutputTokens: 500,
+              temperature: 0.5,
+              maxOutputTokens: 100,
             },
           }),
         }
@@ -53,16 +50,8 @@ export default function Home() {
       if (!content) {
         throw new Error("Respuesta vacía del modelo");
       }
-      let parsed;
-      try {
-        parsed = parseGeminiResponse(content);
-      } catch (parseErr) {
-        console.error(parseErr);
-        throw new Error("Formato de respuesta no válido");
-      }
-      setGrid(parsed.emojiGrid);
-      setExplanations(parsed.emojiExplanation);
-      setDiagnosis(parsed.diagnosis);
+      const matrix = toEmojiMatrix(content);
+      setGrid(matrix);
     } catch (err) {
       console.error(err);
       setError("No se pudo generar el diagnóstico");
@@ -72,25 +61,29 @@ export default function Home() {
   };
 
   return (
-    <main className="p-6 max-w-xl mx-auto space-y-6">
-      <textarea
-        className="w-full p-3 border rounded"
-        rows={4}
-        placeholder="¿Cómo te sientes hoy?"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <button
-        onClick={handleGenerate}
-        disabled={loading}
-        className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-      >
-        {loading ? "Generando..." : "Generar diagnóstico"}
-      </button>
+    <main className="flex flex-col min-h-screen items-center justify-center p-6 space-y-4">
+      {grid && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <EmojiGrid grid={grid} className="text-4xl" />
+        </div>
+      )}
       {error && <p className="text-red-500">{error}</p>}
-      {grid && <EmojiGrid grid={grid} />}
-      {explanations && <ExplanationBox explanations={explanations} />}
-      {diagnosis && <p className="mt-4 text-center">{diagnosis}</p>}
+      <div className="w-full max-w-md mt-auto flex">
+        <textarea
+          className="flex-1 p-3 border rounded-l resize-none"
+          rows={3}
+          placeholder="Escribe algo..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="px-4 bg-blue-600 text-white rounded-r disabled:opacity-50"
+        >
+          {loading ? "..." : "⬆️"}
+        </button>
+      </div>
     </main>
   );
 }
