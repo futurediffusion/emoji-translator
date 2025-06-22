@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cleanEmojiLine } from "@/lib/cleanEmojiLine";
 import Link from "next/link";
 
 export default function TranslatorPage() {
@@ -23,7 +24,8 @@ export default function TranslatorPage() {
       });
       const data = await res.json();
       if (res.ok && data.result) {
-        setLines((prev) => [...prev, String(data.result)]);
+        const cleaned = cleanEmojiLine(String(data.result));
+        setLines((prev) => [...prev, cleaned]);
       } else {
         console.error(data);
       }
