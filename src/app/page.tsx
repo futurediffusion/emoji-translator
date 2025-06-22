@@ -3,6 +3,7 @@
 import { useState } from "react";
 import EmojiGrid from "@/components/EmojiGrid";
 import ExplanationBox from "@/components/ExplanationBox";
+import { parseGeminiResponse } from "@/lib/parseGeminiResponse";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -27,7 +28,7 @@ export default function Home() {
               {
                 parts: [
                   {
-                    text: `A partir del siguiente texto emocional, genera un patrón cuadrado de emojis simétrico (solo 5x5) representando el estado interior del usuario. Luego, explica el significado de cada emoji usado en una tabla. Finalmente, escribe un pequeño diagnóstico emocional.\n\nDevuelve únicamente un objeto JSON con las claves \"emojiGrid\", \"emojiExplanation\" y \"diagnosis\".\n\nTexto: ${text}`,
+                    text: `A partir del siguiente texto emocional, genera:\n1. Un patrón cuadrado 5x5 de emojis simétrico.\n2. Una tabla con el significado de cada emoji usado (1 línea por emoji).\n3. Un diagnóstico breve con título: \"¿Cómo leer esto?\".\n\nTexto emocional: "${text}"`,
                   },
                 ],
               },
@@ -36,17 +37,11 @@ export default function Home() {
         }
       );
       const data = await res.json();
-      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
       if (!content) {
-        throw new Error("Respuesta vac\u00EDa del modelo");
+        throw new Error("Respuesta vacía del modelo");
       }
-      let parsed;
-      try {
-        parsed = JSON.parse(content);
-      } catch (parseErr) {
-        console.error(parseErr);
-        throw new Error("Formato de respuesta no v\u00E1lido");
-      }
+      const parsed = parseGeminiResponse(content);
       setGrid(parsed.emojiGrid);
       setExplanations(parsed.emojiExplanation);
       setDiagnosis(parsed.diagnosis);
