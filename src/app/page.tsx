@@ -3,6 +3,7 @@
 import { useState } from "react";
 import EmojiGrid from "@/components/EmojiGrid";
 import ExplanationBox from "@/components/ExplanationBox";
+import { parseGeminiResponse } from "@/lib/parseGeminiResponse";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -54,7 +55,7 @@ export default function Home() {
       }
       let parsed;
       try {
-        parsed = JSON.parse(content);
+        parsed = parseGeminiResponse(content);
       } catch (parseErr) {
         console.error(parseErr);
         throw new Error("Formato de respuesta no válido");
