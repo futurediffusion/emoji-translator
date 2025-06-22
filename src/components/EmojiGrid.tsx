@@ -11,7 +11,7 @@ export default function EmojiGrid({ grid, className }: EmojiGridProps) {
   const cols = grid[0].length;
   return (
     <div
-      className={`grid gap-1 text-2xl text-center ${className ?? ""}`}
+      className={`grid text-center ${className ?? ""}`}
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
       {flat.map((emoji, i) => (

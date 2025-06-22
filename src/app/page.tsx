@@ -63,8 +63,8 @@ export default function Home() {
   return (
     <main className="flex flex-col min-h-screen items-center justify-center p-6 space-y-4">
       {grid && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <EmojiGrid grid={grid} className="text-4xl" />
+        <div className="w-[320px] h-[320px] p-4 shadow-xl bg-gray-50 rounded-2xl flex flex-col justify-center items-center">
+          <EmojiGrid grid={grid} className="gap-2 text-5xl leading-none" />
         </div>
       )}
       {error && <p className="text-red-500">{error}</p>}
