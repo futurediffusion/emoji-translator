@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 type Cell = {
@@ -17,6 +17,13 @@ function ringIndex(r: number, c: number, center: number) {
   return Math.max(Math.abs(r - center), Math.abs(c - center));
 }
 
+function cleanResponse(text: string) {
+  return text
+    .replace(/^["']+|["']+$/g, "")
+    .replace(/^(?:emoji|meaning|global_?interpretaci\u00f3?n)[:\-]\s*/i, "")
+    .trim();
+}
+
 export default function CreatorGridPage() {
   const [size, setSize] = useState(3);
   const [grid, setGrid] = useState<(Cell | null)[][]>(() => createEmptyGrid(3));
@@ -24,6 +31,7 @@ export default function CreatorGridPage() {
   const [counter, setCounter] = useState(0);
   const [globalMeaning, setGlobalMeaning] = useState("");
   const center = Math.floor(size / 2);
+  const globalTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // load from localStorage
   useEffect(() => {
@@ -65,12 +73,10 @@ export default function CreatorGridPage() {
       }),
     );
     if (!placed.length) return;
-    const list = placed
-      .map((c) => `${c.emoji}: ${c.meaning}`)
-      .join("; ");
-    const prompt = `Dado el siguiente conjunto de emojis con sus significados: ${list}. ¿Cuál es la interpretación simbólica global actual? Responde de forma breve.`;
-    const global = await callGemini(prompt);
-    setGlobalMeaning(global);
+    const list = placed.map((c) => `- ${c.emoji} ${c.meaning}`).join("\n");
+    const prompt = `Significados individuales actuales:\n${list}\n\nCon base en estos significados, ¿cuál sería un significado global coherente del conjunto? Responde brevemente.`;
+    const raw = await callGemini(prompt);
+    setGlobalMeaning(cleanResponse(raw));
   };
 
   const handleCellClick = async (r: number, c: number) => {
@@ -88,14 +94,20 @@ export default function CreatorGridPage() {
     } else {
       cell.emoji = emoji;
     }
-    const meaningPrompt = `¿Qué representa este emoji en términos simbólicos, emocionales, espirituales o psicológicos? Responde de forma concisa. Emoji: ${emoji}`;
-    cell.meaning = await callGemini(meaningPrompt);
+    const meaningPrompt = `¿Qué representa este emoji en términos simbólicos, emocionales o espirituales? Responde de forma concisa sin etiquetas ni comillas. Emoji: ${emoji}`;
+    const raw = await callGemini(meaningPrompt);
+    cell.meaning = cleanResponse(raw);
     setGrid(newGrid);
-    await updateGlobal(newGrid);
-    checkExpansion(newGrid);
+    const expanded = checkExpansion(newGrid);
+    if (expanded) {
+      if (globalTimeout.current) clearTimeout(globalTimeout.current);
+      globalTimeout.current = setTimeout(() => {
+        updateGlobal(newGrid);
+      }, 600);
+    }
   };
 
-  const checkExpansion = (currentGrid: (Cell | null)[][]) => {
+  const checkExpansion = (currentGrid: (Cell | null)[][]): boolean => {
     const filledCurrentRing = currentGrid.every((row, r) =>
       row.every((cell, c) => {
         return ringIndex(r, c, center) > unlocked || cell !== null;
@@ -117,7 +129,9 @@ export default function CreatorGridPage() {
         setGrid(newGrid);
       }
       setUnlocked(nextRing);
+      return true;
     }
+    return false;
   };
 
 
@@ -130,19 +144,7 @@ export default function CreatorGridPage() {
   };
 
   const interpretAll = async () => {
-    const placed: Cell[] = [];
-    grid.forEach((row) =>
-      row.forEach((cell) => {
-        if (cell) placed.push(cell);
-      }),
-    );
-    if (!placed.length) return;
-    const list = placed
-      .map((c) => `${c.emoji}: ${c.meaning}`)
-      .join("; ");
-    const prompt = `Interpretación completa del conjunto de emojis y significados: ${list}. Resume de forma simbólica.`;
-    const result = await callGemini(prompt);
-    alert(result);
+    await updateGlobal(grid);
   };
 
   return (
