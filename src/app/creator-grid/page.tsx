@@ -226,7 +226,7 @@ export default function CreatorGridPage() {
             }),
           )}
         </div>
-      <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-64">
+      <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-full max-w-[32rem]">
         <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
         <button
           onClick={copyMeaning}
