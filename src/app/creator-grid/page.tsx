@@ -18,7 +18,32 @@ function ringIndex(r: number, c: number, center: number) {
 }
 
 function cleanResponse(text: string) {
-  return text
+  const trimmed = text.trim();
+  if (/^[{[]/.test(trimmed)) {
+    try {
+      const obj = JSON.parse(trimmed);
+      if (typeof obj === "string") return obj;
+      if (obj && typeof obj === "object") {
+        const record = obj as Record<string, unknown>;
+        for (const key of [
+          "global_meaning",
+          "globalMeaning",
+          "meaning",
+          "text",
+        ]) {
+          const val = record[key];
+          if (typeof val === "string") return val;
+        }
+        const first = Object.values(record).find(
+          (v): v is string => typeof v === "string",
+        );
+        if (first) return first;
+      }
+    } catch {
+      // ignore JSON parse errors
+    }
+  }
+  return trimmed
     .replace(/^["']+|["']+$/g, "")
     .replace(/^(?:emoji|meaning|global_?interpretaci\u00f3?n)[:\-]\s*/i, "")
     .trim();
