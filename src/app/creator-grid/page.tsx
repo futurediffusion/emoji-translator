@@ -88,10 +88,10 @@ export default function CreatorGridPage() {
     setEditing({ r, c, value: existing?.emoji || "" });
   };
 
-  const confirmEdit = async () => {
+  const confirmEdit = async (override?: string) => {
     if (!editing) return;
     const { r, c, value } = editing;
-    const emoji = value.trim();
+    const emoji = (override ?? value).trim();
     setEditing(null);
     if (!emoji) return;
     const newGrid = grid.map((row) => row.slice());
@@ -181,7 +181,7 @@ export default function CreatorGridPage() {
                         const val = e.target.value.slice(0, 2);
                         setEditing({ ...editing, value: val });
                         if (Array.from(val).length >= 1) {
-                          setTimeout(() => confirmEdit(), 0);
+                          setTimeout(() => confirmEdit(val), 0);
                         }
                       }}
                       onBlur={confirmEdit}
