@@ -226,12 +226,14 @@ export default function CreatorGridPage() {
             }),
           )}
         </div>
-      <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-full max-w-[32rem]">
-        <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
+      <div className="relative w-full max-w-[32rem]">
+        <div className="p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-full">
+          <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
+        </div>
         <button
           onClick={copyMeaning}
           title="Copiar texto"
-          className="absolute bottom-1.5 right-1.5 text-xl p-1 rounded hover:bg-gray-100"
+          className="absolute -bottom-3 -right-3 text-xl p-1 rounded bg-white shadow hover:bg-gray-100"
         >
           📋
         </button>
