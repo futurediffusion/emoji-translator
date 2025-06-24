@@ -177,9 +177,13 @@ export default function CreatorGridPage() {
                     <input
                       autoFocus={editing.value === ""}
                       value={editing.value}
-                      onChange={(e) =>
-                        setEditing({ ...editing, value: e.target.value.slice(0, 2) })
-                      }
+                      onChange={(e) => {
+                        const val = e.target.value.slice(0, 2);
+                        setEditing({ ...editing, value: val });
+                        if (Array.from(val).length >= 1) {
+                          setTimeout(() => confirmEdit(), 0);
+                        }
+                      }}
                       onBlur={confirmEdit}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
