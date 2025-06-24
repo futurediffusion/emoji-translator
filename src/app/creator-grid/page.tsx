@@ -146,12 +146,12 @@ export default function CreatorGridPage() {
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen w-screen bg-white p-4">
-      <div className="flex flex-row items-start gap-8">
-        <div
-          className="grid gap-1 p-2 rounded-[20px] border-2 bg-white shadow"
-          style={{ gridTemplateColumns: `repeat(${size}, 5rem)` }}
-        >
+    <main className="flex flex-col items-center justify-center min-h-screen w-screen bg-white p-4 gap-4">
+      <h1 className="text-3xl font-bold">NEOGLIPHO Creator Grid</h1>
+      <div
+        className="grid gap-1 p-2 rounded-[20px] border-2 bg-white shadow"
+        style={{ gridTemplateColumns: `repeat(${size}, 5rem)` }}
+      >
           {grid.map((row, r) =>
             row.map((cell, c) => {
               const ring = ringIndex(r, c, center);
@@ -170,26 +170,22 @@ export default function CreatorGridPage() {
             }),
           )}
         </div>
-        <div className="flex flex-col gap-4 w-64">
-          <h1 className="text-3xl font-bold text-left">NEOGLIPHO Creator Grid</h1>
-          <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem]">
-            <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
-            <button
-              onClick={copyMeaning}
-              title="Copiar texto"
-              className="absolute bottom-1.5 right-1.5 text-xl p-1 rounded hover:bg-gray-100"
-            >
-              📋
-            </button>
-          </div>
-          <button
-            onClick={interpretAll}
-            className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
-          >
-            Interpretar Todo
-          </button>
-        </div>
+      <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-64">
+        <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
+        <button
+          onClick={copyMeaning}
+          title="Copiar texto"
+          className="absolute bottom-1.5 right-1.5 text-xl p-1 rounded hover:bg-gray-100"
+        >
+          📋
+        </button>
       </div>
+      <button
+        onClick={interpretAll}
+        className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
+      >
+        Interpretar Todo
+      </button>
       <Link
         href="/"
         className="fixed bottom-4 right-4 z-50 text-3xl p-4 bg-white rounded-full shadow-md hover:shadow-lg"
