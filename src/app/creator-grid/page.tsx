@@ -7,6 +7,7 @@ type Cell = {
   emoji: string;
   meaning: string;
   index: number;
+  positionLabel: string;
 };
 
 function createEmptyGrid(size: number): (Cell | null)[][] {
@@ -15,6 +16,20 @@ function createEmptyGrid(size: number): (Cell | null)[][] {
 
 function ringIndex(r: number, c: number, center: number) {
   return Math.max(Math.abs(r - center), Math.abs(c - center));
+}
+
+function getPositionLabel(r: number, c: number, size: number): string {
+  const center = Math.floor(size / 2);
+  if (r === center && c === center) return "Centro";
+  const vertical = r < center ? "Norte" : r > center ? "Sur" : "";
+  const horizontal = c < center ? "Oeste" : c > center ? "Este" : "";
+  if (vertical && horizontal) {
+    if (vertical === "Norte" && horizontal === "Oeste") return "Noroeste";
+    if (vertical === "Norte" && horizontal === "Este") return "Noreste";
+    if (vertical === "Sur" && horizontal === "Oeste") return "Suroeste";
+    return "Sureste";
+  }
+  return vertical || horizontal || "Centro";
 }
 
 function cleanResponse(text: string) {
@@ -100,8 +115,13 @@ export default function CreatorGridPage() {
       }),
     );
     if (!placed.length) return;
-    const list = placed.map((c) => `- ${c.emoji} ${c.meaning}`).join("\n");
-    const prompt = `Significados individuales actuales:\n${list}\n\nCon base en estos significados, ¿cuál sería un significado global coherente del conjunto? Responde brevemente.`;
+    const list = placed
+      .map(
+        (c) =>
+          `Emoji: ${c.emoji}\nSignificado individual: ${c.meaning}.\nPosición simbólica: ${c.positionLabel}.`,
+      )
+      .join("\n\n");
+    const prompt = `${list}\n\nCon base en estos elementos y sus posiciones en el mandala simbólico, genera una interpretación global coherente.`;
     setGlobalLoading(true);
     try {
       const raw = await callGemini(prompt);
@@ -137,18 +157,20 @@ export default function CreatorGridPage() {
     setEditing(null);
     if (!emoji) return;
     const newGrid = grid.map((row) => row.slice());
+    const positionLabel = getPositionLabel(r, c, size);
     let cell = newGrid[r][c];
     if (!cell) {
-      cell = { emoji, meaning: "", index: counter + 1 };
+      cell = { emoji, meaning: "", index: counter + 1, positionLabel };
       newGrid[r][c] = cell;
       setCounter((p) => p + 1);
     } else {
       cell.emoji = emoji;
+      cell.positionLabel = positionLabel;
     }
     // show the emoji immediately
     setGrid(newGrid);
 
-    const meaningPrompt = `¿Qué representa este emoji en términos simbólicos, emocionales o espirituales? Responde de forma concisa sin etiquetas ni comillas. Emoji: ${emoji}`;
+    const meaningPrompt = `¿Qué representa este emoji en términos simbólicos, emocionales o espirituales? Responde de forma concisa sin etiquetas ni comillas.\nLa posición simbólica del emoji es: '${positionLabel}'. Considera también esto en la interpretación.\nEmoji: ${emoji}`;
     const raw = await callGemini(meaningPrompt);
     cell.meaning = cleanResponse(raw);
 
@@ -231,7 +253,7 @@ export default function CreatorGridPage() {
                           setTimeout(() => confirmEdit(val), 0);
                         }
                       }}
-                      onBlur={confirmEdit}
+                      onBlur={() => confirmEdit()}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
