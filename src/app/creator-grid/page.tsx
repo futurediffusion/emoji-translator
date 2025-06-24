@@ -128,10 +128,15 @@ export default function CreatorGridPage() {
     } else {
       cell.emoji = emoji;
     }
+    // show the emoji immediately
+    setGrid(newGrid);
+
     const meaningPrompt = `¿Qué representa este emoji en términos simbólicos, emocionales o espirituales? Responde de forma concisa sin etiquetas ni comillas. Emoji: ${emoji}`;
     const raw = await callGemini(meaningPrompt);
     cell.meaning = cleanResponse(raw);
-    setGrid(newGrid);
+
+    // force rerender with the meaning and check expansion afterwards
+    setGrid(newGrid.map((row) => row.slice()));
     checkExpansion(newGrid);
     if (globalTimeout.current) clearTimeout(globalTimeout.current);
     globalTimeout.current = setTimeout(() => {
