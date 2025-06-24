@@ -146,11 +146,10 @@ export default function CreatorGridPage() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center h-screen w-screen p-4 bg-white">
-      <h1 className="text-2xl font-bold mb-4">NEOGLIPHO Creator Grid</h1>
-      <div className="flex flex-col md:flex-row gap-6">
+    <main className="flex items-center justify-center min-h-screen w-screen bg-white p-4">
+      <div className="flex flex-row items-start gap-8">
         <div
-          className="grid gap-1 p-4 rounded-2xl border bg-white shadow"
+          className="grid gap-1 p-2 rounded-[20px] border-2 bg-white shadow"
           style={{ gridTemplateColumns: `repeat(${size}, 5rem)` }}
         >
           {grid.map((row, r) =>
@@ -162,7 +161,7 @@ export default function CreatorGridPage() {
                 <div
                   key={`${r}-${c}`}
                   onClick={() => !locked && handleCellClick(r, c)}
-                  className={`w-20 h-20 flex items-center justify-center text-2xl select-none transition-colors ${locked ? "bg-white border border-gray-300 text-gray-400 cursor-default" : isCenter ? "border border-black cursor-pointer hover:bg-gray-100" : "border border-gray-700 cursor-pointer hover:bg-gray-100"}`}
+                  className={`w-20 h-20 flex items-center justify-center text-2xl select-none transition-colors border-2 ${locked ? "bg-white border-gray-500 text-gray-400 pointer-events-none" : "bg-white border-black cursor-pointer hover:bg-gray-100"} ${isCenter ? "brightness-95" : ""}`}
                   title={cell?.meaning || ""}
                 >
                   {cell ? cell.emoji : ""}
@@ -171,8 +170,9 @@ export default function CreatorGridPage() {
             }),
           )}
         </div>
-        <div className="flex flex-col gap-2 items-center max-w-xs w-full">
-          <div className="relative p-3 border rounded bg-white min-h-[4rem] w-full">
+        <div className="flex flex-col gap-4 w-64">
+          <h1 className="text-3xl font-bold text-left">NEOGLIPHO Creator Grid</h1>
+          <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem]">
             <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
             <button
               onClick={copyMeaning}
@@ -184,7 +184,7 @@ export default function CreatorGridPage() {
           </div>
           <button
             onClick={interpretAll}
-            className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+            className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
           >
             Interpretar Todo
           </button>
