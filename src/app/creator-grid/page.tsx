@@ -120,15 +120,13 @@ export default function CreatorGridPage() {
     }
   };
 
-  const downloadJSON = () => {
-    const data = { size, grid, unlocked, counter, globalMeaning };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "creator-grid.json";
-    a.click();
-    URL.revokeObjectURL(url);
+
+  const copyMeaning = async () => {
+    try {
+      await navigator.clipboard.writeText(globalMeaning);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const interpretAll = async () => {
@@ -148,12 +146,12 @@ export default function CreatorGridPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center p-4 bg-white">
+    <main className="flex flex-col items-center justify-center h-screen w-screen p-4 bg-white">
       <h1 className="text-2xl font-bold mb-4">NEOGLIPHO Creator Grid</h1>
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-6">
         <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${size}, 3rem)` }}
+          className="grid gap-1 p-4 rounded-2xl border bg-white shadow"
+          style={{ gridTemplateColumns: `repeat(${size}, 5rem)` }}
         >
           {grid.map((row, r) =>
             row.map((cell, c) => {
@@ -163,8 +161,8 @@ export default function CreatorGridPage() {
               return (
                 <div
                   key={`${r}-${c}`}
-                  onClick={() => handleCellClick(r, c)}
-                  className={`w-12 h-12 flex items-center justify-center border cursor-pointer text-2xl select-none ${locked ? "bg-gray-200 text-gray-400" : "bg-white"} ${isCenter ? "bg-gray-300" : ""}`}
+                  onClick={() => !locked && handleCellClick(r, c)}
+                  className={`w-20 h-20 flex items-center justify-center text-2xl select-none transition-colors ${locked ? "bg-white border border-gray-300 text-gray-400 cursor-default" : isCenter ? "border border-black cursor-pointer hover:bg-gray-100" : "border border-gray-700 cursor-pointer hover:bg-gray-100"}`}
                   title={cell?.meaning || ""}
                 >
                   {cell ? cell.emoji : ""}
@@ -173,31 +171,31 @@ export default function CreatorGridPage() {
             }),
           )}
         </div>
-        <div className="flex flex-col gap-2 max-w-xs">
-          <div className="p-2 border rounded bg-gray-50 min-h-[4rem]">
-            <strong>Significado global:</strong>
-            <div className="mt-1 whitespace-pre-wrap text-sm">{globalMeaning}</div>
+        <div className="flex flex-col gap-2 items-center max-w-xs w-full">
+          <div className="relative p-3 border rounded bg-white min-h-[4rem] w-full">
+            <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
+            <button
+              onClick={copyMeaning}
+              title="Copiar texto"
+              className="absolute bottom-1.5 right-1.5 text-xl p-1 rounded hover:bg-gray-100"
+            >
+              📋
+            </button>
           </div>
           <button
             onClick={interpretAll}
-            className="px-3 py-1 rounded bg-blue-500 text-white"
+            className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
           >
             Interpretar Todo
           </button>
-          <button
-            onClick={downloadJSON}
-            className="px-3 py-1 rounded bg-green-500 text-white"
-          >
-            Descargar JSON
-          </button>
-          <Link
-            href="/"
-            className="text-2xl p-2 bg-white rounded-full shadow hover:shadow-lg w-fit self-end"
-          >
-            🏠
-          </Link>
         </div>
       </div>
+      <Link
+        href="/"
+        className="fixed bottom-4 right-4 z-50 text-3xl p-4 bg-white rounded-full shadow-md hover:shadow-lg"
+      >
+        🏠
+      </Link>
     </main>
   );
 }
