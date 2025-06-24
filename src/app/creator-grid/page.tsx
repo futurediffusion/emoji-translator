@@ -18,6 +18,16 @@ function ringIndex(r: number, c: number, center: number) {
 }
 
 function cleanResponse(text: string) {
+  try {
+    const obj = JSON.parse(text);
+    if (typeof obj === "object" && obj !== null) {
+      const value =
+        obj.significado_global ?? obj.globalMeaning ?? obj.meaning ?? obj.result;
+      if (typeof value === "string") return value.trim();
+    }
+  } catch {
+    // not JSON; fall back to string cleanup
+  }
   return text
     .replace(/^["']+|["']+$/g, "")
     .replace(/^(?:emoji|meaning|global_?interpretaci\u00f3?n)[:\-]\s*/i, "")
@@ -32,6 +42,10 @@ export default function CreatorGridPage() {
   const [globalMeaning, setGlobalMeaning] = useState("");
   const center = Math.floor(size / 2);
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
+  const placedCells = grid
+    .flat()
+    .filter((c): c is Cell => c !== null)
+    .sort((a, b) => a.index - b.index);
 
   // load from localStorage
   useEffect(() => {
@@ -98,13 +112,11 @@ export default function CreatorGridPage() {
     const raw = await callGemini(meaningPrompt);
     cell.meaning = cleanResponse(raw);
     setGrid(newGrid);
-    const expanded = checkExpansion(newGrid);
-    if (expanded) {
-      if (globalTimeout.current) clearTimeout(globalTimeout.current);
-      globalTimeout.current = setTimeout(() => {
-        updateGlobal(newGrid);
-      }, 600);
-    }
+    checkExpansion(newGrid);
+    if (globalTimeout.current) clearTimeout(globalTimeout.current);
+    globalTimeout.current = setTimeout(() => {
+      updateGlobal(newGrid);
+    }, 600);
   };
 
   const checkExpansion = (currentGrid: (Cell | null)[][]): boolean => {
@@ -150,10 +162,11 @@ export default function CreatorGridPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen w-screen bg-white p-4 gap-4">
       <h1 className="text-3xl font-bold">NEOGLIPHO Creator Grid</h1>
-      <div
-        className="grid gap-1 p-2 rounded-[20px] border-2 bg-white shadow"
-        style={{ gridTemplateColumns: `repeat(${size}, 5rem)` }}
-      >
+      <div className="flex gap-4">
+        <div
+          className="grid gap-1 p-2 rounded-[20px] border-2 bg-white shadow"
+          style={{ gridTemplateColumns: `repeat(${size}, 5rem)` }}
+        >
           {grid.map((row, r) =>
             row.map((cell, c) => {
               const ring = ringIndex(r, c, center);
@@ -169,18 +182,32 @@ export default function CreatorGridPage() {
                   {cell ? cell.emoji : ""}
                 </div>
               );
-            }),
+            })
           )}
         </div>
-      <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-64">
-        <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
-        <button
-          onClick={copyMeaning}
-          title="Copiar texto"
-          className="absolute bottom-1.5 right-1.5 text-xl p-1 rounded hover:bg-gray-100"
-        >
-          📋
-        </button>
+        <div className="flex flex-col gap-4">
+          <div className="relative p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-64">
+            <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
+            <button
+              onClick={copyMeaning}
+              title="Copiar texto"
+              className="absolute bottom-1.5 right-1.5 text-xl p-1 rounded hover:bg-gray-100"
+            >
+              📋
+            </button>
+          </div>
+          <div className="p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-64 overflow-auto max-h-60">
+            <div className="text-sm text-left space-y-1">
+              {placedCells.map((cell) => (
+                <div key={cell.index} className="flex gap-1 items-start">
+                  <span className="font-semibold">{cell.index}.</span>
+                  <span>{cell.emoji}</span>
+                  <span className="flex-1">{cell.meaning}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
       <button
         onClick={interpretAll}
