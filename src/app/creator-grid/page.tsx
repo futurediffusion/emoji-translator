@@ -107,13 +107,11 @@ export default function CreatorGridPage() {
     const raw = await callGemini(meaningPrompt);
     cell.meaning = cleanResponse(raw);
     setGrid(newGrid);
-    const expanded = checkExpansion(newGrid);
-    if (expanded) {
-      if (globalTimeout.current) clearTimeout(globalTimeout.current);
-      globalTimeout.current = setTimeout(() => {
-        updateGlobal(newGrid);
-      }, 600);
-    }
+    checkExpansion(newGrid);
+    if (globalTimeout.current) clearTimeout(globalTimeout.current);
+    globalTimeout.current = setTimeout(() => {
+      updateGlobal(newGrid);
+    }, 600);
   };
 
   const checkExpansion = (currentGrid: (Cell | null)[][]): boolean => {
