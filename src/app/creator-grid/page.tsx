@@ -55,6 +55,8 @@ export default function CreatorGridPage() {
   const [unlocked, setUnlocked] = useState(0); // how many rings unlocked
   const [counter, setCounter] = useState(0);
   const [globalMeaning, setGlobalMeaning] = useState("");
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [loadingDots, setLoadingDots] = useState(0);
   const center = Math.floor(size / 2);
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -100,11 +102,26 @@ export default function CreatorGridPage() {
     if (!placed.length) return;
     const list = placed.map((c) => `- ${c.emoji} ${c.meaning}`).join("\n");
     const prompt = `Significados individuales actuales:\n${list}\n\nCon base en estos significados, ¿cuál sería un significado global coherente del conjunto? Responde brevemente.`;
-    const raw = await callGemini(prompt);
-    setGlobalMeaning(cleanResponse(raw));
+    setGlobalLoading(true);
+    try {
+      const raw = await callGemini(prompt);
+      setGlobalMeaning(cleanResponse(raw));
+    } finally {
+      setGlobalLoading(false);
+    }
   };
 
   const [editing, setEditing] = useState<{ r: number; c: number; value: string } | null>(null);
+
+  useEffect(() => {
+    if (globalLoading) {
+      const id = setInterval(() => {
+        setLoadingDots((d) => (d + 1) % 4);
+      }, 500);
+      return () => clearInterval(id);
+    }
+    setLoadingDots(0);
+  }, [globalLoading]);
 
   const startEdit = (r: number, c: number) => {
     const ring = ringIndex(r, c, center);
@@ -233,12 +250,18 @@ export default function CreatorGridPage() {
         </div>
       <div className="relative w-full max-w-[32rem]">
         <div className="p-3 border-2 border-gray-200 rounded bg-white min-h-[4rem] w-full">
-          <div className="whitespace-pre-wrap text-sm text-left">{globalMeaning}</div>
+          <div className="whitespace-pre-wrap text-sm text-left">
+            {globalLoading ? (
+              <span className="animate-pulse">Esperando Respuesta{".".repeat(loadingDots)}</span>
+            ) : (
+              globalMeaning
+            )}
+          </div>
         </div>
         <button
           onClick={copyMeaning}
           title="Copiar texto"
-          className="absolute -bottom-3 -right-3 text-xl p-1 rounded bg-white shadow hover:bg-gray-100"
+          className="absolute bottom-0 -right-4 pl-2 pr-1 py-1 text-xl rounded bg-white shadow hover:bg-gray-100"
         >
           📋
         </button>
