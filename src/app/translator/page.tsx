@@ -13,7 +13,6 @@ export default function TranslatorPage() {
     const prompt = text.trim();
     if (!prompt) return;
     setLoading(true);
-    setText("");
     try {
       const res = await fetch("/api/translate", {
         method: "POST",
@@ -33,6 +32,7 @@ export default function TranslatorPage() {
       console.error(err);
     } finally {
       setLoading(false);
+      setText("");
     }
   };
 
