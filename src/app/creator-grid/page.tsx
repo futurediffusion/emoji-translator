@@ -79,16 +79,25 @@ export default function CreatorGridPage() {
     setGlobalMeaning(cleanResponse(raw));
   };
 
-  const handleCellClick = async (r: number, c: number) => {
+  const [editing, setEditing] = useState<{ r: number; c: number; value: string } | null>(null);
+
+  const startEdit = (r: number, c: number) => {
     const ring = ringIndex(r, c, center);
     if (ring > unlocked) return;
     const existing = grid[r][c];
-    const emoji = window.prompt(existing ? "Editar emoji" : "Coloca un emoji", existing?.emoji || "");
+    setEditing({ r, c, value: existing?.emoji || "" });
+  };
+
+  const confirmEdit = async () => {
+    if (!editing) return;
+    const { r, c, value } = editing;
+    const emoji = value.trim();
+    setEditing(null);
     if (!emoji) return;
     const newGrid = grid.map((row) => row.slice());
     let cell = newGrid[r][c];
     if (!cell) {
-      cell = { emoji: emoji, meaning: "", index: counter + 1 };
+      cell = { emoji, meaning: "", index: counter + 1 };
       newGrid[r][c] = cell;
       setCounter((p) => p + 1);
     } else {
@@ -162,11 +171,29 @@ export default function CreatorGridPage() {
               return (
                 <div
                   key={`${r}-${c}`}
-                  onClick={() => !locked && handleCellClick(r, c)}
+                  onClick={() => !locked && startEdit(r, c)}
                   className={`w-20 h-20 flex items-center justify-center text-2xl select-none transition-colors border-2 ${locked ? "bg-white border-gray-500 text-gray-400 pointer-events-none" : "bg-white border-black cursor-pointer hover:bg-gray-100"} ${isCenter ? "brightness-95" : ""}`}
                   title={cell?.meaning || ""}
                 >
-                  {cell ? cell.emoji : ""}
+                  {editing && editing.r === r && editing.c === c ? (
+                    <input
+                      autoFocus={editing.value === ""}
+                      value={editing.value}
+                      onChange={(e) =>
+                        setEditing({ ...editing, value: e.target.value.slice(0, 2) })
+                      }
+                      onBlur={confirmEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          confirmEdit();
+                        }
+                      }}
+                      className="w-full h-full bg-transparent border-none outline-none text-3xl text-center p-0"
+                    />
+                  ) : (
+                    cell ? cell.emoji : ""
+                  )}
                 </div>
               );
             }),
