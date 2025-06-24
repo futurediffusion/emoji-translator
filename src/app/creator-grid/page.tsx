@@ -32,7 +32,8 @@ function getPositionLabel(r: number, c: number, size: number): string {
   return vertical || horizontal || "Centro";
 }
 
-function cleanResponse(text: string) {
+function cleanResponse(text?: string | null) {
+  if (typeof text !== "string") return "";
   const trimmed = text.trim();
   if (/^[{[]/.test(trimmed)) {
     try {
@@ -98,13 +99,22 @@ export default function CreatorGridPage() {
   }, [size, grid, unlocked, counter, globalMeaning]);
 
   const callGemini = async (prompt: string) => {
-    const res = await fetch("/api/gemini", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
-    const data = await res.json();
-    return data.result as string;
+    try {
+      const res = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("Gemini API error", data.error);
+        return "";
+      }
+      return (data.result as string) ?? "";
+    } catch (err) {
+      console.error(err);
+      return "";
+    }
   };
 
   const updateGlobal = async (newGrid: (Cell | null)[][]) => {
