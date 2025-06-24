@@ -11,6 +11,11 @@ const options = [
     href: '/translator',
     emojis: ['💬', '✍️', '🌐', '🧠'],
   },
+  {
+    title: 'NEOGLIPHO Creator Grid',
+    href: '/creator-grid',
+    emojis: ['🌀', '✨', '🧩', '🖌️'],
+  },
 ];
 
 export default function Home() {
